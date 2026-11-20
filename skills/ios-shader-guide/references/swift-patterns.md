@@ -86,8 +86,8 @@ struct RippleDemo: View {
                 .resizable().scaledToFill()
                 .layerEffect(
                     ShaderLibrary.ripple(.float2(origin), .float(t),
-                                         .float(14), .float(18), .float(5), .float(900)),
-                    maxSampleOffset: CGSize(width: 14, height: 14),
+                                         .float(12), .float(14), .float(1.5), .float(400)),
+                    maxSampleOffset: CGSize(width: 12, height: 12),
                     isEnabled: startDate != nil && t < 3
                 )
         }

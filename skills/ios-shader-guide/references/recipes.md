@@ -293,7 +293,7 @@ Circles that approach each other merge via `smin` (smooth minimum). It ignores t
 
 ```metal
 [[ stitchable ]] half4 metaballs(float2 position, half4 color, float2 size, float time, half4 tint) {
-    float2 p = centeredUV(position, size);
+    float2 p = (position - 0.5f * size) / min(size.x, size.y);   // shorter side spans -0.5...0.5, so the orbit fits portrait and landscape
     float d = 10.0f;
     for (int i = 0; i < 5; i++) {
         float fi = float(i);
@@ -301,9 +301,9 @@ Circles that approach each other merge via `smin` (smooth minimum). It ignores t
                                   cos(time * (0.40f + 0.11f * fi) + fi * 1.7f));
         d = smin(d, sdCircle(p - c, 0.09f + 0.015f * fi), 0.12f);
     }
-    float aa = 1.5f / size.y;                          // about one and a half points, in uv units
-    float shape = 1.0f - smoothstep(-aa, aa, d);
-    return tint * half(shape);                         // tint is premultiplied
+    float aa = 1.5f / min(size.x, size.y);             // about one and a half points, in uv units
+    half shape = half(1.0f - smoothstep(-aa, aa, d));
+    return tint * shape + color * (1.0h - shape);      // both premultiplied: blobs over the view's own color
 }
 ```
 
@@ -353,8 +353,8 @@ static inline float sceneSDF(float3 p, float time) {
 [[ stitchable ]] half4 sphereMarch(float2 position, half4 color, float2 size, float time) {
     float2 p = centeredUV(position, size);
     p.y = -p.y;                                    // 3D wants y up
-    float3 ro = float3(0.0f, 0.0f, -3.0f);         // ray origin (camera)
-    float3 rd = normalize(float3(p, 1.6f));        // ray direction
+    float3 ro = float3(0.0f, 0.0f, -4.0f);         // ray origin (camera)
+    float3 rd = normalize(float3(p, 1.4f));        // ray direction; 1.4 = focal length (bigger = more zoom)
     float t = 0.0f;
     bool hit = false;
     for (int i = 0; i < 48; i++) {                 // fixed, small step budget
@@ -450,7 +450,7 @@ A decaying wave that spreads outward from the touched point. The wavefront reach
 }
 ```
 
-The Swift side is a full example in `swift-patterns.md` section 3. Parameter units: `amplitude` points (e.g. 14), `frequency` radians/second (e.g. 18), `decay` 1/second (e.g. 5), `speed` points/second (e.g. 900). `maxSampleOffset` = `amplitude`.
+The Swift side is a full example in `swift-patterns.md` section 3. Parameter units: `amplitude` points (e.g. 12), `frequency` radians/second (e.g. 14), `decay` 1/second (e.g. 1.5; at 5 the wave is gone in under half a second), `speed` points/second (e.g. 400). `maxSampleOffset` = `amplitude`.
 
 ## 17. lens: magnifier (layerEffect)
 

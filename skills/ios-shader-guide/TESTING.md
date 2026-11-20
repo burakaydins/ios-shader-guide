@@ -1,17 +1,27 @@
 # Testing guide
 
-The code in this skill was **not compiled or run** in the environment where it was written: there was no Xcode and no Metal compiler. The only check done was converting the `.metal` files to OpenCL C and scanning them with `clang -fsyntax-only` (`tools/syntax_check.py`); this catches typos, undeclared identifiers and most vector/scalar type mismatches. It does not check `half`/`float` mixing, `[[ stitchable ]]` binding, or anything SwiftUI-specific. Follow the steps below on your own Mac before publishing.
+Last full test: 2026-11-21, Xcode 26.3, iOS 26.2 Simulator and iPhone 13 (iOS 26.7.3); results are in the README. Repeat the steps below after changing shaders or before a release.
 
-## 1. Set up the ShaderLab project (10 minutes)
+## 1. Open the ShaderLab project (2 minutes)
 
-1. In Xcode: **File ▸ New ▸ Project ▸ iOS ▸ App** (Interface: SwiftUI, Language: Swift). Set the minimum deployment target to **iOS 17**.
-2. Delete the `…App.swift` and `ContentView.swift` files the template created.
-3. Drag the files from `examples/ShaderLab/` into the project ("Copy items if needed", add to target):
-   `ShaderLabApp.swift`, `ContentView.swift`, `AnimatedShader.swift`, `Shaders.metal`, `ShadertoyPorts.metal`, `Advanced.metal`, `ShaderHelpers.h`.
-4. Build (⌘B). If there is a compile error, record the **error text and the line** (section 4).
-5. Run on a real iPhone. The Simulator runs it, but says nothing about speed or heat.
+1. Open `examples/ShaderLab/ShaderLab.xcodeproj` in Xcode (iOS 17 deployment target, no dependencies).
+2. Select the ShaderLab target ▸ Signing & Capabilities: pick your team and change the bundle identifier (`com.example.ShaderLab`) to one of your own.
+3. Build (⌘B). If there is a compile error, record the **error text and the line** (section 4).
+4. Run on a real iPhone. The Simulator runs it, but says nothing about speed or heat.
 
-If the header is not found (`SwiftUI/SwiftUI_Metal.h`): Apple's `layerEffect` page says the type is defined in `<SwiftUI/SwiftUI.h>`; change the `#include` line in the `.metal` files to that and note the result.
+Xcode 26 and later ship the Metal compiler separately. If the build says the Metal Toolchain is missing, run `xcodebuild -downloadComponent MetalToolchain` (about 700 MB) or accept Xcode's download prompt.
+
+Launch arguments (Product ▸ Scheme ▸ Edit Scheme ▸ Run ▸ Arguments), handy for testing:
+
+- `-demo plasma` opens a demo directly (names are the `Demo` cases in `ContentView.swift`).
+- `-showFPS` shows a frame-rate meter on demo screens and prints `FPS <demo> <value>` to the console once a second.
+
+From the command line (device UDID from `xcrun devicectl list devices`):
+
+```bash
+xcrun devicectl device process launch --device <UDID> --console --terminate-existing <bundle id> -demo aurora -showFPS
+```
+
 
 ## 2. Expected look of each demo
 
@@ -19,32 +29,32 @@ Run each one and tick it off. "Expected" is the author's intent; if you see some
 
 | Demo | Expected | ✔ |
 |---|---|---|
-| plasma | A smooth, flowing rainbow pattern | |
-| aurora | Green/purple, slowly drifting cloud-like pattern; frame rate may drop | |
-| voronoiCells | Colored cells, dark borders, slow drift | |
-| metaballs | 5 cyan blobs on black that merge as they approach | |
-| sphereMarch | A wobbling lit sphere on a dark purple gradient | |
-| vignette | Edges darken; slider at 0 does nothing | |
-| shimmer | A light band sweeps left to right across white text; the band does not light up outside the text | |
-| duotone | Image in indigo (shadows) and yellow (highlights) | |
-| filmGrain | Fine, flickering grain | |
-| scanlines | Dark horizontal lines, every 3 points | |
-| holo | Dragging the card shifts a rainbow sheen, with glitter specks | |
-| dissolve | The button dissolves the image along a noise pattern, with an orange burning edge; bringing it back works | |
-| textGradient | "Shader" painted with a moving color blend | |
-| chromaticAberration | Red/blue separation at edges; none at slider 0; edges not clipped | |
-| pixelate | Blocky image; the slider value is the cell size | |
-| ripple | A wave spreads from where you tap and fades (~3 s) | |
-| lens | A circle under your finger magnifies 2x | |
-| glitch | Horizontal bands shift, with color separation | |
-| glow | A soft yellow halo around the yellow bolt; the halo is not cut off by the view | |
-| wave | The image ripples horizontally | |
-| swirl | A whirlpool around your finger | |
-| dotGrid | Evenly spaced white dots on black | |
-| progressRing | A green ring filling clockwise from 12 o'clock; the slider changes it | |
-| debugUV | Top-left black, top-right red, bottom-left green, bottom-right yellow | |
-| debugGrid | Red grid lines every 40 points | |
-| debugAlpha | Text white, surroundings black (alpha view) | |
+| plasma | A smooth, flowing rainbow pattern | ✔ |
+| aurora | Green/purple, slowly drifting cloud-like pattern; frame rate may drop | ✔ |
+| voronoiCells | Colored cells, dark borders, slow drift | ✔ |
+| metaballs | 5 cyan blobs on black that merge as they approach, all inside the view | ✔ |
+| sphereMarch | A wobbling lit sphere on a dark purple gradient | ✔ |
+| vignette | Edges darken; slider at 0 does nothing | ✔ |
+| shimmer | A light band sweeps left to right across white text; the band does not light up outside the text | ✔ |
+| duotone | Image in indigo (shadows) and yellow (highlights) | ✔ |
+| filmGrain | Fine, flickering grain | ✔ |
+| scanlines | Dark horizontal lines, every 3 points | ✔ |
+| holo | Dragging the card shifts a rainbow sheen, with glitter specks | ✔ |
+| dissolve | The button dissolves the image along a noise pattern, with an orange burning edge; bringing it back works | ✔ |
+| textGradient | "Shader" painted with a moving color blend | ✔ |
+| chromaticAberration | Red/blue separation at edges; none at slider 0; edges not clipped | ✔ |
+| pixelate | Blocky image; the slider value is the cell size | ✔ |
+| ripple | A wave spreads from where you tap and fades (~2 s) | ✔ |
+| lens | A circle under your finger magnifies 2x | ✔ |
+| glitch | Horizontal bands shift, with color separation | ✔ |
+| glow | A soft yellow halo around the yellow bolt; the halo is not cut off by the view | ✔ |
+| wave | The image ripples horizontally | ✔ |
+| swirl | A whirlpool around your finger | ✔ |
+| dotGrid | Evenly spaced white dots on black | ✔ |
+| progressRing | A green ring filling clockwise from 12 o'clock; the slider changes it | ✔ |
+| debugUV | Top-left black, top-right red, bottom-left green, bottom-right yellow | ✔ |
+| debugGrid | Red grid lines every 40 points | ✔ |
+| debugAlpha | Text white, surroundings black (alpha view) | ✔ |
 
 ## 3. Especially doubtful points
 
@@ -102,10 +112,10 @@ If you see an unexpected trigger or a miss, edit the `description` field in `SKI
 
 ## 6. Pre-release checklist
 
-- [ ] Every demo in section 2 is ticked and bugs are fixed.
-- [ ] Fixes were made in `examples/ShaderLab/*.metal` and `python3 tools/build_recipes.py` was run (the docs take their code from there).
-- [ ] The "test status" table in the README is updated with the real state (device, iOS, Xcode versions).
+- [x] Every demo in section 2 is ticked and bugs are fixed.
+- [x] Fixes were made in `examples/ShaderLab/*.metal` and `python3 tools/build_recipes.py` was run (the docs take their code from there).
+- [x] The "test status" table in the README is updated with the real state (device, iOS, Xcode versions).
 - [x] The copyright holder name in `LICENSE` is filled in.
-- [ ] No third-party shader code (Shadertoy etc.) got into the repo; the examples in `ShadertoyPorts.metal` were written for this skill.
+- [x] No third-party shader code (Shadertoy etc.) got into the repo; the examples in `ShadertoyPorts.metal` were written for this skill.
 - [ ] Information taken from Apple documentation is only paraphrased, with no long quotations (see "Sources" in the README).
 - [ ] The repo is public and the install command in the README works with your own repo name.

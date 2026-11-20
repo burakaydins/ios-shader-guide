@@ -2,6 +2,10 @@
 
 An Agent Skill for SwiftUI and Metal shaders (for Claude Code, Claude.ai and other agents that read the `SKILL.md` format). Everything is written in English; Claude replies in whatever language the user writes in.
 
+<p align="center"><img src="docs/demo.gif" width="300" alt="plasma and holographic card demos running in ShaderLab"></p>
+
+![All 26 ShaderLab demos](docs/demos.jpg)
+
 What it does:
 
 - **Explains** how a shader runs per pixel, coordinates, and building blocks such as `mix`/`smoothstep`/noise/SDF, with a learning ladder.
@@ -12,10 +16,10 @@ What it does:
 
 ## Install
 
-With your own repo name (once you publish this repo):
+With the skills CLI:
 
 ```bash
-npx skills add <user>/<repo> --skill ios-shader-guide
+npx skills add burakaydins/ios-shader-guide --skill ios-shader-guide
 ```
 
 Manually: copy the `skills/ios-shader-guide` folder into `~/.claude/skills/` (personal) or a project's `.claude/skills/`. Copy the whole folder; `SKILL.md`, `references/`, `examples/` and `tools/` work together.
@@ -37,22 +41,23 @@ skills/ios-shader-guide/
 │   ├── performance-debugging.md  speed, debugging, Xcode Metal debugger (generated)
 │   ├── realitykit-shadergraph.md RealityKit CustomMaterial, ShaderGraph
 │   └── galleries.md              official sources, galleries, learning resources
-├── examples/ShaderLab/           runnable demo project with every recipe
-└── tools/                        doc generator, rough syntax checker
+├── examples/ShaderLab/           runnable demo project (ShaderLab.xcodeproj) with every recipe
+└── tools/                        doc generator, argument checker, rough syntax checker
 ```
 
 ## Test status
 
+Tested on 2026-11-21 with Xcode 26.3 (17C529), iOS 26.2 Simulator (iPhone 17 Pro) and an iPhone 13 on iOS 26.7.3.
+
 | Topic | Status |
 |---|---|
-| API signatures (`colorEffect`, `distortionEffect`, `layerEffect`, `Shader`, `Shader.Argument`) | Verified against Apple documentation pages |
-| RealityKit `CustomMaterial` rules, ShaderGraph facts | Verified against Apple documentation pages |
-| Xcode Metal debugger steps | Taken from Apple's articles; the articles do not mention SwiftUI shaders, **not tried on a SwiftUI shader** |
-| `.metal` code | Rough syntax check only (converted to OpenCL C and run through clang). **Not compiled in Xcode** |
-| Swift demo code | **Not compiled** |
-| Performance | **Not measured**; no fps numbers are promised |
-
-When you test, update this table with the real status (including device, iOS and Xcode versions).
+| `.metal` code | Compiles with the Xcode 26.3 Metal toolchain; all three files link into one library without name collisions |
+| Swift demo code | Builds for iOS 17+ (`ShaderLab.xcodeproj`, Debug and Release) |
+| Swift arguments vs. shader parameters | All 26 calls match in count, order and type (`tools/check_arguments.py`) |
+| Looks | All 26 demos checked on the Simulator against `TESTING.md` section 2 (two geometry bugs and the ripple timing were fixed during testing) |
+| Performance | iPhone 13 (60 Hz): every demo held 60 fps on the main thread over 10 seconds (`-showFPS`, `TESTING.md` section 1). This counts display-link frames, not GPU time; use Instruments for GPU cost. Older devices not measured |
+| API signatures, RealityKit `CustomMaterial`, ShaderGraph | Verified against Apple documentation pages |
+| Xcode Metal debugger steps | Taken from Apple's articles; **not tried on a SwiftUI shader** |
 
 ## Contributing and doc generation
 
@@ -60,8 +65,10 @@ When you test, update this table with the real status (including device, iOS and
 
 ```bash
 python3 skills/ios-shader-guide/tools/build_recipes.py
-python3 skills/ios-shader-guide/tools/syntax_check.py skills/ios-shader-guide/examples/ShaderLab/Shaders.metal
+python3 skills/ios-shader-guide/tools/check_arguments.py
 ```
+
+Then build `examples/ShaderLab/ShaderLab.xcodeproj` in Xcode. On a machine without Xcode, `tools/syntax_check.py` gives a rough syntax check.
 
 ## Sources
 

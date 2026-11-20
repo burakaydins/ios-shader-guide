@@ -284,7 +284,7 @@ A decaying wave that spreads outward from the touched point. The wavefront reach
 
 {{code:ripple}}
 
-The Swift side is a full example in `swift-patterns.md` section 3. Parameter units: `amplitude` points (e.g. 14), `frequency` radians/second (e.g. 18), `decay` 1/second (e.g. 5), `speed` points/second (e.g. 900). `maxSampleOffset` = `amplitude`.
+The Swift side is a full example in `swift-patterns.md` section 3. Parameter units: `amplitude` points (e.g. 12), `frequency` radians/second (e.g. 14), `decay` 1/second (e.g. 1.5; at 5 the wave is gone in under half a second), `speed` points/second (e.g. 400). `maxSampleOffset` = `amplitude`.
 
 ## 17. lens: magnifier (layerEffect)
 

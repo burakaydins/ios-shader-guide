@@ -1,6 +1,5 @@
 // ContentView.swift
-// A list of demos, one per recipe in references/recipes.md. Not compiled by the
-// author of the skill: build it in Xcode and report any error (see TESTING.md).
+// A list of demos, one per recipe in references/recipes.md..
 // License: MIT (see LICENSE at the repo root).
 
 import SwiftUI
@@ -65,8 +64,10 @@ enum Demo: String, CaseIterable, Identifiable {
 }
 
 struct ContentView: View {
+    @State private var path: [Demo] = LaunchOptions.initialDemo.map { [$0] } ?? []
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 ForEach(Demo.groups, id: \.0) { group in
                     Section(group.0) {
@@ -93,6 +94,9 @@ struct DemoScreen: View {
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(white: 0.08))
+            .overlay(alignment: .topTrailing) {
+                if LaunchOptions.showFPS { FPSMeter(label: demo.rawValue) }
+            }
     }
 
     @ViewBuilder private var content: some View {
@@ -403,8 +407,8 @@ struct RippleDemo: View {
             SampleArt()
                 .layerEffect(
                     ShaderLibrary.ripple(.float2(origin), .float(t),
-                                         .float(14), .float(18), .float(5), .float(900)),
-                    maxSampleOffset: CGSize(width: 14, height: 14),
+                                         .float(12), .float(14), .float(1.5), .float(400)),   // amplitude pt, frequency, decay per s, speed pt/s
+                    maxSampleOffset: CGSize(width: 12, height: 12),
                     isEnabled: startDate != nil && t < 3
                 )
                 .gesture(SpatialTapGesture().onEnded { value in
